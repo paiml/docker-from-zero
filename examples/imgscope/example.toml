@@ -1,0 +1,8 @@
+[example]
+title = "imgscope CLI"
+summary = "layers, verify and diff, each printing a contract line"
+run = "cargo run -q -- verify app.tar"
+
+[[files]]
+path = "../../src/cli.rs"
+note = "the command dispatcher"

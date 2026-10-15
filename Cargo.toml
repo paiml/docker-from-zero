@@ -1,0 +1,28 @@
+[package]
+name = "imgscope"
+version = "0.1.0"
+edition = "2021"
+description = "Read-only inspector for docker save / OCI image tarballs"
+license = "MIT"
+publish = false
+exclude = ["scripts/", "contracts/", ".github/"]
+
+[lib]
+name = "imgscope"
+path = "src/lib.rs"
+
+[[bin]]
+name = "imgscope"
+path = "src/main.rs"
+
+[dependencies]
+serde_json = "1"
+sha2 = "0.10"
+tar = "0.4"
+flate2 = "1"
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+all = { level = "deny", priority = -1 }

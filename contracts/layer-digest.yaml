@@ -1,0 +1,37 @@
+metadata:
+  version: 1.0.0
+  description: "A layer's recomputed sha256 equals the diff_id the image config records"
+  references:
+  - 'OCI image spec: config rootfs.diff_ids are the sha256 of the uncompressed layer'
+equations:
+  layer_digest_matches_diff_id:
+    formula: "for every layer i: sha256(uncompressed(layer_i)) == config.rootfs.diff_ids[i]"
+    invariants:
+    - A tampered layer changes its digest, so verification fails
+    - Gzip compression of the stored blob never changes the digest
+    preconditions:
+    - 'the input is a docker save tarball with manifest.json'
+    postconditions:
+    - 'imgscope verify prints "contract: layer-digests-match-diff-ids OK" and exits 0'
+    lean_theorem: none_repository_fact
+proof_obligations:
+- type: invariant
+  property: "recomputed digest equals recorded diff_id for every layer"
+falsification_tests:
+- id: FALSIFY-IMG-001
+  rule: "tampered diff_id is detected"
+  prediction: "verify_detects_tampered_diff_id fails to find mismatch layer 0 only if the check is broken"
+  if_fails: "verify reports OK on an image whose layer does not match its recorded digest"
+kani_harnesses:
+- id: KANI-IMG-001
+  obligation: "recomputed digest equals recorded diff_id for every layer"
+  bound: 4
+  strategy: bounded_int
+  solver: cadical
+qa_gate:
+  id: F-IMG-001
+  name: "layer digest contract"
+  description: "verify prints the contract line only when every digest matches"
+  checks:
+  - validation
+  - falsification

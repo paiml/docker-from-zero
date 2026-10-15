@@ -1,0 +1,37 @@
+metadata:
+  version: 1.0.0
+  description: "A whiteout entry in a later layer removes the named file from the visible image"
+  references:
+  - 'OCI image layer spec: .wh.<name> whiteout files'
+equations:
+  whiteout_hides_file:
+    formula: "visible(layers) excludes dir/name when a later layer holds dir/.wh.name"
+    invariants:
+    - The whiteout marker itself is never visible
+    - A file deleted in a later layer is still present in the earlier layer's bytes
+    preconditions:
+    - 'layers are applied in manifest order'
+    postconditions:
+    - 'imgscope diff lists the deleted file with a leading "-"'
+    lean_theorem: none_repository_fact
+proof_obligations:
+- type: invariant
+  property: "a whiteout removes exactly its target"
+falsification_tests:
+- id: FALSIFY-IMG-002
+  rule: "whiteout hides file"
+  prediction: "whiteout_hides_file_and_diff_reports_it fails if the whiteout is ignored"
+  if_fails: "a deleted file is reported as still present"
+kani_harnesses:
+- id: KANI-IMG-002
+  obligation: "a whiteout removes exactly its target"
+  bound: 4
+  strategy: bounded_int
+  solver: cadical
+qa_gate:
+  id: F-IMG-002
+  name: "whiteout contract"
+  description: "diff honours whiteouts"
+  checks:
+  - validation
+  - falsification
